@@ -1,0 +1,60 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.profiles (
+  id uuid NOT NULL,
+  email text NOT NULL,
+  full_name text,
+  avatar_url text,
+  role text NOT NULL DEFAULT 'user'::text CHECK (role = ANY (ARRAY['user'::text, 'admin'::text])),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.activities (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL UNIQUE,
+  description text,
+  points integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  semester_id uuid,
+  CONSTRAINT activities_pkey PRIMARY KEY (id),
+  CONSTRAINT activities_semester_id_fkey FOREIGN KEY (semester_id) REFERENCES public.semesters(id)
+);
+CREATE TABLE public.submissions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  activity_id uuid NOT NULL,
+  image_drive_id text NOT NULL,
+  image_name text NOT NULL,
+  image_url text,
+  status text NOT NULL DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text])),
+  submitted_at timestamp with time zone NOT NULL DEFAULT now(),
+  reviewed_at timestamp with time zone,
+  reviewed_by uuid,
+  notes text,
+  semester_id uuid,
+  storage_type text NOT NULL DEFAULT 'drive'::text CHECK (storage_type = ANY (ARRAY['drive'::text, 'supabase'::text])),
+  supabase_path text,
+  CONSTRAINT submissions_pkey PRIMARY KEY (id),
+  CONSTRAINT submissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id),
+  CONSTRAINT submissions_activity_id_fkey FOREIGN KEY (activity_id) REFERENCES public.activities(id),
+  CONSTRAINT submissions_reviewed_by_fkey FOREIGN KEY (reviewed_by) REFERENCES public.profiles(id),
+  CONSTRAINT submissions_semester_id_fkey FOREIGN KEY (semester_id) REFERENCES public.semesters(id)
+);
+CREATE TABLE public.semesters (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  code text NOT NULL UNIQUE,
+  is_active boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT semesters_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.storage_config (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_by uuid,
+  storage_backend text NOT NULL CHECK (storage_backend = ANY (ARRAY['drive'::text, 'supabase'::text])),
+  CONSTRAINT storage_config_pkey PRIMARY KEY (id),
+  CONSTRAINT storage_config_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.profiles(id)
+);
