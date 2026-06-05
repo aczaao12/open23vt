@@ -166,9 +166,35 @@ DH23VT/
 
 ---
 
+## Cảnh báo
+
+> **Nếu bạn là dev có kinh nghiệm:** Source code này không có giá trị gì với bạn đâu. Nó được tạo bởi một thằng low-tech ngồi gõ prompt với AI (gọi là *vibe coding*). Cấu trúc thì như mớ bòng bong, best practice thì không có, type an toàn thì nửa vời.
+>
+> Đọc đến đây rồi thì **reset não lại** và **rời đi** nhé. Đừng mất công quăng lời chê bai — ai cũng biết nó dở rồi, không cần nhắc lại. Web chạy được là mừng, các bạn sinh viên xài ổn là OK. 🫡
+
+## Vibe Credits
+
+Source code này được sinh ra từ **vibe coding** thuần túy:
+- Prompt → AI → copy → paste → sửa → chửi → lại prompt
+- Có thể bạn thấy code này quen quen vì AI viết ra có personality riêng
+- Một số bug tồn tại như **tính năng** (feature, not bug)
+- Nếu bạn sửa được cái gì đó, PR của bạn luôn được welcome — nhưng đừng kỳ vọng tác giả hiểu code bạn viết
+
+## Jokes dành cho ai lỡ đọc tới đây
+
+- Hỏi: Tại sao web này không có dark mode? Đáp: Vì tối quá không thấy bug.
+
+- Hỏi: Bao nhiêu dev React tham gia dự án này? Đáp: 0. Chỉ có 1 thằng ngồi gõ prompt với Claude.
+
+- Code này khó bảo trì tới mức nào? Tới mức ai mở folder `node_modules` lên cũng thấy quen hơn là nhìn vào `src/`.
+
+- AI review code: trông ổn. Tác giả review code: trông cũng ổn nốt. Production: trên mức ổn.
+
+- Hỏi: Có unit test không? Đáp: Có. Mở web lên, ấn nút, nếu không cháy là pass.
+
 ## Known Issues
 
-Dự án này được tạo bởi **vibe coding** — người không chuyên, học code qua AI, nhiều thứ chưa hoàn hảo:
+Như đã nói, code dở, nên có cả đống issue:
 
 - **UI chưa đẹp** — giao diện cơ bản, thiếu responsive trên mobile
 - **Thiếu validation** — chưa kiểm tra dung lượng file upload, chưa giới hạn định dạng ảnh
@@ -180,8 +206,6 @@ Dự án này được tạo bởi **vibe coding** — người không chuyên, 
 - **Thiếu unit test** — không có test tự động
 - **Không có CI/CD** — phải deploy tay
 - **Google Drive token hết hạn** — provider token có thể hết hạn sau 1 giờ, cần refresh
-
-**Bạn muốn cải thiện?** Fork repo, sửa code, tạo Pull Request. Hoặc mở issue trên GitHub để góp ý.
 
 ---
 
