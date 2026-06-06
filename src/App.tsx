@@ -15,13 +15,15 @@ import AdminActivities from '@/pages/admin/AdminActivities'
 import AdminSubmissions from '@/pages/admin/AdminSubmissions'
 import AdminSemesters from '@/pages/admin/AdminSemesters'
 import AdminStorage from '@/pages/admin/AdminStorage'
+import { Agentation } from 'agentation'
 
+const basename = '/open23vt'
 const queryClient = new QueryClient()
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter basename={basename}>
         <AuthProvider>
           <SemesterProvider>
             <Routes>
@@ -40,6 +42,7 @@ export default function App() {
               </Route>
               <Route path="*" element={<Navigate to="/activities" replace />} />
             </Routes>
+            {import.meta.env.DEV && <Agentation />}
           </SemesterProvider>
         </AuthProvider>
       </BrowserRouter>

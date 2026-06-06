@@ -16,7 +16,7 @@ const options: { value: StorageType; icon: typeof HardDrive; label: string; desc
 export default function AdminStorage() {
   const { user, isAdmin, loading: authLoading } = useAuth()
   const navigate = useNavigate()
-  const [config, setConfig] = useState<StorageConfig | null>(null)
+  const [, setConfig] = useState<StorageConfig | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [backend, setBackend] = useState<StorageType>('drive')
