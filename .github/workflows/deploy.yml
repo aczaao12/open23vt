@@ -25,6 +25,12 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install
+      - name: Inject env vars
+        run: |
+          echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env
+          echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> .env
+          echo "VITE_SUPABASE_STORAGE_BUCKET=${{ secrets.VITE_SUPABASE_STORAGE_BUCKET }}" >> .env
+          echo "VITE_DRIVE_FOLDER_NAME=${{ secrets.VITE_DRIVE_FOLDER_NAME }}" >> .env
       - run: pnpm build
       - name: SPA fallback
         run: cp ./dist/index.html ./dist/404.html
