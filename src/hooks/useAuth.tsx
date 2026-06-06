@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       provider: 'google',
       options: {
         scopes: 'https://www.googleapis.com/auth/drive.file',
-        redirectTo: window.location.origin,
+        redirectTo: window.location.origin + import.meta.env.BASE_URL,
       },
     })
     if (error) console.error('Login error:', error)
