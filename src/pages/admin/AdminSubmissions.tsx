@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getPendingSubmissions, getAllSubmissions, reviewSubmission, getSemesters } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
+import { useActiveSemester } from '@/hooks/useSemester'
 import type { Submission, Semester } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -24,6 +25,7 @@ export default function AdminSubmissions() {
   const [semesters, setSemesters] = useState<Semester[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'pending' | 'all'>('pending')
+  const { activeSemester } = useActiveSemester()
   const [filterSemester, setFilterSemester] = useState<string>('')
   const [notes, setNotes] = useState<Record<string, string>>({})
   const [reviewing, setReviewing] = useState<string | null>(null)
@@ -32,6 +34,12 @@ export default function AdminSubmissions() {
     if (authLoading) return
     if (!isAdmin) navigate('/activities', { replace: true })
   }, [isAdmin, authLoading, navigate])
+
+  useEffect(() => {
+    if (!authLoading && activeSemester) {
+      setFilterSemester(activeSemester.id)
+    }
+  }, [authLoading, activeSemester])
 
   useEffect(() => { if (!authLoading) load() }, [filter, filterSemester, authLoading])
 

@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useActiveSemester } from '@/hooks/useSemester'
-import { getSubmissions } from '@/lib/api'
+import { getSubmissions, deleteSubmission } from '@/lib/api'
+import { deleteFile } from '@/lib/storage'
 import type { Submission } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Loader2, ExternalLink, CheckCircle2, XCircle, Clock, Calendar } from 'lucide-react'
+import { Loader2, ExternalLink, CheckCircle2, XCircle, Clock, Calendar, Pencil, Trash2, RotateCcw, AlertTriangle } from 'lucide-react'
 
 const statusBadge: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ReactNode; label: string }> = {
   pending: { variant: 'outline', icon: <Clock className="h-3 w-3 mr-1" />, label: 'Chờ duyệt' },
@@ -19,11 +22,28 @@ export default function MySubmissions() {
   const { activeSemester, loading: semLoading } = useActiveSemester()
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
+  const [revokingId, setRevokingId] = useState<string | null>(null)
+  const [revokingSub, setRevokingSub] = useState<Submission | null>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (!user || semLoading) return
     getSubmissions(user.id, activeSemester?.id).then(setSubmissions).finally(() => setLoading(false))
   }, [user, activeSemester, semLoading])
+
+  async function handleRevoke(sub: Submission) {
+    setRevokingId(sub.id)
+    try {
+      await deleteFile(sub)
+      await deleteSubmission(sub.id)
+      setSubmissions((prev) => prev.filter((s) => s.id !== sub.id))
+    } catch {
+      // silent
+    } finally {
+      setRevokingId(null)
+      setRevokingSub(null)
+    }
+  }
 
   if (loading || semLoading) {
     return (
@@ -70,11 +90,13 @@ export default function MySubmissions() {
                 <TableHead>Ngày nộp</TableHead>
                 <TableHead>Ghi chú</TableHead>
                 <TableHead></TableHead>
+                <TableHead className="w-[160px]">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {submissions.map((sub) => {
                 const sb = statusBadge[sub.status]
+                const isRevoking = revokingId === sub.id
                 return (
                   <TableRow key={sub.id}>
                     <TableCell className="font-medium">{sub.activity?.name}</TableCell>
@@ -95,6 +117,30 @@ export default function MySubmissions() {
                         </a>
                       )}
                     </TableCell>
+                    <TableCell>
+                      {revokingSub?.id === sub.id ? (
+                        <div className="flex items-center gap-1 text-xs text-destructive">
+                          <AlertTriangle className="h-3 w-3" />
+                          <Button size="sm" variant="destructive" className="h-7 text-xs px-2" onClick={() => handleRevoke(sub)} disabled={isRevoking}>
+                            {isRevoking ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Xác nhận'}
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-7 text-xs px-2" onClick={() => setRevokingSub(null)}>Hủy</Button>
+                        </div>
+                      ) : sub.status === 'pending' ? (
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate(`/activities/${sub.activity_id}/submit`)}>
+                            <Pencil className="h-3 w-3 mr-1" /> Sửa
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => setRevokingSub(sub)}>
+                            <Trash2 className="h-3 w-3 mr-1" /> Thu hồi
+                          </Button>
+                        </div>
+                      ) : sub.status === 'rejected' ? (
+                        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate(`/activities/${sub.activity_id}/submit`)}>
+                          <RotateCcw className="h-3 w-3 mr-1" /> Nộp lại
+                        </Button>
+                      ) : null}
+                    </TableCell>
                   </TableRow>
                 )
               })}
@@ -107,6 +153,7 @@ export default function MySubmissions() {
       <div className="space-y-3 md:hidden">
         {submissions.map((sub) => {
           const sb = statusBadge[sub.status]
+          const isRevoking = revokingId === sub.id
           return (
             <Card key={sub.id}>
               <CardHeader className="pb-2">
@@ -115,7 +162,7 @@ export default function MySubmissions() {
                   <Badge variant={sb.variant}>{sb.icon}{sb.label}</Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-1 text-sm">
+              <CardContent className="space-y-2 text-sm">
                 <p><span className="text-muted-foreground">Điểm:</span> {sub.activity?.points}</p>
                 <p className="font-mono text-xs text-muted-foreground truncate">{sub.image_name}</p>
                 <p><span className="text-muted-foreground">Ngày nộp:</span> {new Date(sub.submitted_at).toLocaleDateString('vi-VN')}</p>
@@ -125,6 +172,33 @@ export default function MySubmissions() {
                     <ExternalLink className="h-3 w-3" /> Xem ảnh
                   </a>
                 )}
+
+                {revokingSub?.id === sub.id ? (
+                  <div className="flex items-center gap-2 pt-1">
+                    <span className="text-xs text-destructive flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" /> Xác nhận thu hồi?
+                    </span>
+                    <Button size="sm" variant="destructive" className="h-7 text-xs" onClick={() => handleRevoke(sub)} disabled={isRevoking}>
+                      {isRevoking ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Xác nhận'}
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setRevokingSub(null)}>Hủy</Button>
+                  </div>
+                ) : sub.status === 'pending' ? (
+                  <div className="flex gap-2 pt-1">
+                    <Button size="sm" variant="outline" className="flex-1" onClick={() => navigate(`/activities/${sub.activity_id}/submit`)}>
+                      <Pencil className="h-3 w-3 mr-1" /> Sửa
+                    </Button>
+                    <Button size="sm" variant="outline" className="flex-1 text-destructive" onClick={() => setRevokingSub(sub)}>
+                      <Trash2 className="h-3 w-3 mr-1" /> Thu hồi
+                    </Button>
+                  </div>
+                ) : sub.status === 'rejected' ? (
+                  <div className="pt-1">
+                    <Button size="sm" variant="outline" className="w-full" onClick={() => navigate(`/activities/${sub.activity_id}/submit`)}>
+                      <RotateCcw className="h-3 w-3 mr-1" /> Nộp lại
+                    </Button>
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
           )

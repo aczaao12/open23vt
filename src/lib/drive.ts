@@ -34,6 +34,14 @@ async function ensureFolder(token: string): Promise<string> {
   return folder.id
 }
 
+export async function deleteFromDrive(fileId: string): Promise<void> {
+  const token = await getAccessToken()
+  await fetch(`${DRIVE_API}/files/${fileId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
 export async function uploadToDrive(file: File, fileName: string): Promise<{ id: string; name: string; webViewLink: string }> {
   const token = await getAccessToken()
   const folderId = await ensureFolder(token)

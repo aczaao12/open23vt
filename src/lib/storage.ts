@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
-import { uploadToDrive as driveUpload } from './drive'
+import { uploadToDrive as driveUpload, deleteFromDrive as driveDelete } from './drive'
 import { getStorageConfig } from './api'
-import type { StorageType } from '@/types/database'
+import type { StorageType, Submission } from '@/types/database'
 
 const BUCKET = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'minhchung'
 
@@ -44,6 +44,23 @@ async function uploadToSupabase(file: File, fileName: string, userId: string): P
 
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
   return { path, url: data.publicUrl }
+}
+
+async function deleteFromSupabase(path: string): Promise<void> {
+  const token = await getAccessToken()
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+  await fetch(`${supabaseUrl}/storage/v1/object/${BUCKET}/${path}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function deleteFile(submission: Submission): Promise<void> {
+  if (submission.storage_type === 'drive' && submission.image_drive_id) {
+    await driveDelete(submission.image_drive_id)
+  } else if (submission.storage_type === 'supabase' && submission.supabase_path) {
+    await deleteFromSupabase(submission.supabase_path)
+  }
 }
 
 export async function uploadFile(

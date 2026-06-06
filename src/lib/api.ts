@@ -97,6 +97,16 @@ export async function getPendingSubmissions(semesterId?: string): Promise<Submis
   return data || []
 }
 
+export async function getSubmission(activityId: string, userId: string): Promise<Submission | null> {
+  const { data } = await supabase
+    .from('submissions')
+    .select('*, activity:activities(*), semester:semesters(*)')
+    .eq('activity_id', activityId)
+    .eq('user_id', userId)
+    .maybeSingle()
+  return data
+}
+
 export async function createSubmission(submission: {
   user_id: string
   activity_id: string
@@ -108,6 +118,20 @@ export async function createSubmission(submission: {
   supabase_path?: string | null
 }) {
   return supabase.from('submissions').insert(submission).select('*, semester:semesters(*)').single()
+}
+
+export async function updateSubmission(id: string, updates: {
+  image_drive_id?: string
+  image_name?: string
+  image_url?: string | null
+  storage_type?: string
+  supabase_path?: string | null
+}) {
+  return supabase.from('submissions').update(updates).eq('id', id)
+}
+
+export async function deleteSubmission(id: string) {
+  return supabase.from('submissions').delete().eq('id', id)
 }
 
 export async function reviewSubmission(id: string, status: 'approved' | 'rejected', reviewedBy: string, notes?: string) {

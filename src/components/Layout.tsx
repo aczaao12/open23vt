@@ -111,7 +111,11 @@ export function Layout() {
 
         {/* User section */}
         <div className="border-t p-4">
-          <div className="flex items-center gap-3 mb-3">
+          <NavLink
+            to="/profile"
+            onClick={() => setSidebarOpen(false)}
+            className="flex items-center gap-3 mb-3 rounded-lg transition-colors hover:bg-accent p-1 -mx-1"
+          >
             <Avatar className="h-8 w-8">
               <AvatarImage src={profile?.avatar_url || undefined} />
               <AvatarFallback className="text-xs">{initials}</AvatarFallback>
@@ -120,7 +124,7 @@ export function Layout() {
               <p className="text-sm font-medium truncate">{profile?.full_name || 'User'}</p>
               <p className="text-xs text-muted-foreground truncate">{profile?.email}</p>
             </div>
-          </div>
+          </NavLink>
           <Button variant="outline" size="sm" className="w-full" onClick={signOut}>
             <LogOut className="h-4 w-4 mr-2" />
             Đăng xuất

@@ -11,6 +11,7 @@ import Login from '@/pages/Login'
 import Activities from '@/pages/Activities'
 import Submit from '@/pages/Submit'
 import MySubmissions from '@/pages/MySubmissions'
+import Profile from '@/pages/Profile'
 import AdminActivities from '@/pages/admin/AdminActivities'
 import AdminSubmissions from '@/pages/admin/AdminSubmissions'
 import AdminSemesters from '@/pages/admin/AdminSemesters'
@@ -32,6 +33,7 @@ export default function App() {
               <Route path="/terms" element={<Terms />} />
               <Route path="/login" element={<Login />} />
               <Route element={<AuthGuard><Layout /></AuthGuard>}>
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/activities" element={<Activities />} />
                 <Route path="/activities/:id/submit" element={<Submit />} />
                 <Route path="/my-submissions" element={<MySubmissions />} />

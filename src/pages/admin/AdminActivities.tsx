@@ -7,7 +7,8 @@ import type { Activity, Semester } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import MarkdownViewer from '@/components/ui/markdown-viewer'
+import RichTextEditor from '@/components/ui/rich-text-editor'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
@@ -36,7 +37,13 @@ export default function AdminActivities() {
   const [filterSemester, setFilterSemester] = useState<string>('')
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => { if (!authLoading) load() }, [authLoading])
+  useEffect(() => {
+    if (!authLoading && activeSemester) {
+      setFilterSemester(activeSemester.id)
+    }
+  }, [authLoading, activeSemester])
+
+  useEffect(() => { if (!authLoading) load() }, [filterSemester, authLoading])
 
   async function load() {
     setLoading(true)
@@ -146,7 +153,7 @@ export default function AdminActivities() {
                   )}
                 </TableCell>
                 <TableCell className="text-muted-foreground max-w-[250px] truncate">
-                  {act.description || '-'}
+                  <MarkdownViewer content={act.description} />
                 </TableCell>
                 <TableCell>
                   <span className="inline-flex items-center gap-1">
@@ -188,7 +195,7 @@ export default function AdminActivities() {
                   {act.semester.code}
                 </Badge>
               )}
-              <p className="text-sm text-muted-foreground">{act.description || '-'}</p>
+              <MarkdownViewer content={act.description} />
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => openEdit(act)}>
                   <Pencil className="h-3 w-3 mr-1" /> Sửa
@@ -225,7 +232,9 @@ export default function AdminActivities() {
           </div>
           <div>
             <Label htmlFor="desc">Mô tả</Label>
-            <Textarea id="desc" value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1.5" placeholder="Mô tả hoạt động..." />
+            <div className="mt-1.5">
+              <RichTextEditor key={editing?.id || 'new'} value={description} onChange={setDescription} placeholder="Mô tả hoạt động..." />
+            </div>
           </div>
           <div>
             <Label htmlFor="points">Điểm số</Label>

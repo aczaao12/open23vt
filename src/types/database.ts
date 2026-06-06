@@ -8,6 +8,10 @@ export interface Profile {
   full_name: string | null
   avatar_url: string | null
   role: Role
+  birthday: string | null
+  gender: string | null
+  hometown: string | null
+  position: string | null
   created_at: string
 }
 
